@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { TextInput, PasswordInput, Button, Paper, Title, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { TextInput, PasswordInput, Button, Paper, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useAuth } from "../../context/useAuth";
+import { useNavigate } from "react-router-dom";
+import { loginRequest } from "../../api/auth";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -11,35 +12,55 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const form = useForm({
-    initialValues: { username: "", password: "" },
+    initialValues: {
+      email: "",
+      password: "",
+    },
     validate: {
-      username: (val) => (val.length < 3 ? "Enter valid username" : null),
-      password: (val) => (val.length < 6 ? "Password too short" : null),
+      email: (value) => (value ? null : "Invalid email"),
+      password: (value) => (value.length < 6 ? "Password too short" : null),
     },
   });
 
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);
-    const success = await login(values.username, values.password);
-    setLoading(false);
+    try {
+      const res = await loginRequest(values.email, values.password)
 
-    if (success) {
-      notifications.show({ title: "Success", message: "Logged in!", color: "green" });
+      login(res.access_token);
+
+      notifications.show({
+        title: "Success",
+        message: "You are logged in",
+        color: "green",
+      });
+
       navigate("/profile");
-    } else {
-      notifications.show({ title: "Error", message: "Invalid credentials", color: "red" });
+    } catch (err) {
+      console.log(err)
+      notifications.show({
+        title: "Error",
+        message: "Wrong email or password",
+        color: "red",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Paper maw={420} mx="auto" mt="lg" p="md" withBorder>
-      <Title order={2} ta="center" mb="md">Login</Title>
+    <Paper maw={400} mx="auto" mt="lg" p="md" withBorder>
+      <Title order={2} ta="center" mb="md">
+        Login
+      </Title>
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <TextInput label="Username" {...form.getInputProps("username")} mb="sm" />
-        <PasswordInput label="Password" {...form.getInputProps("password")} mb="sm" />
-        <Button type="submit" fullWidth loading={loading}>
-          Login
-        </Button>
+        <Stack>
+          <TextInput label="Email" {...form.getInputProps("email")} />
+          <PasswordInput label="Password" {...form.getInputProps("password")} />
+          <Button type="submit" loading={loading}>
+            Login
+          </Button>
+        </Stack>
       </form>
     </Paper>
   );
