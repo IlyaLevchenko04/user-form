@@ -1,19 +1,24 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { BrowserRouter, Route, Routes } from 'react-router'
-import { LoginPage } from './pages/Login/index.tsx'
-import { Profile } from './pages/Profile/index.tsx'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import { BrowserRouter } from "react-router-dom";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<App />}/>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/profile" element={<Profile />} />
-    </Routes>
-  </BrowserRouter>
-  </StrictMode>,
-)
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+
+import App from "./App";
+import { AuthProvider } from "./context/AuthContext";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <MantineProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Notifications />
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </MantineProvider>
+  </React.StrictMode>
+);
